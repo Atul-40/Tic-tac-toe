@@ -195,6 +195,14 @@ button {
     min-width: 190px;
 }
 
+.difficulty-selection {
+    display: none;
+}
+
+.difficulty-btn {
+    min-width: 150px;
+}
+
 /* MUSIC */
 
 .music-btn {
@@ -472,8 +480,6 @@ button {
 
 <button class="music-btn" id="musicBtn" type="button">🔊</button>
 
-<audio id="beginSound" src="assests/begin.mp3" preload="auto"></audio>
-
 <!-- CONFETTI -->
 
 <div class="confetti c1"></div>
@@ -532,9 +538,41 @@ button {
         </button>
 
         <button class="mode-btn"
-                onclick="startGame('ai')"
+                onclick="showDifficultyScreen()"
                 type="button">
             🤖 Play vs AI
+        </button>
+
+    </div>
+
+</div>
+
+<!-- DIFFICULTY SCREEN -->
+
+<div class="screen difficulty-selection" id="difficultyScreen">
+
+    <div class="mode-title">
+        Choose Difficulty
+    </div>
+
+    <div class="mode-container">
+
+        <button class="mode-btn difficulty-btn"
+                onclick="startAiGame('easy')"
+                type="button">
+            Easy
+        </button>
+
+        <button class="mode-btn difficulty-btn"
+                onclick="startAiGame('medium')"
+                type="button">
+            Medium
+        </button>
+
+        <button class="mode-btn difficulty-btn"
+                onclick="startAiGame('impossible')"
+                type="button">
+            Impossible
         </button>
 
     </div>
@@ -664,6 +702,7 @@ button {
 
 const homeScreen = document.getElementById("homeScreen");
 const modeScreen = document.getElementById("modeScreen");
+const difficultyScreen = document.getElementById("difficultyScreen");
 const gameScreen = document.getElementById("gameScreen");
 
 const boardElement = document.getElementById("board");
@@ -678,7 +717,6 @@ const scoreOElement = document.getElementById("scoreO");
 const scoreDrawElement = document.getElementById("scoreDraw");
 
 const musicBtn = document.getElementById("musicBtn");
-const beginSound = document.getElementById("beginSound");
 
 const popup = document.getElementById("popup");
 const popupTitle = document.getElementById("popupTitle");
@@ -698,6 +736,7 @@ let currentPlayer = "X";
 let gameActive = true;
 
 let gameMode = "twoPlayer";
+let aiDifficulty = "medium";
 
 let scoreX = 0;
 let scoreO = 0;
@@ -846,16 +885,24 @@ function showModes() {
 
     playSound("click");
 
-    beginSound.currentTime = 0;
-    beginSound.play().catch(function() {
-    });
-
     homeScreen.style.display = "none";
 
     modeScreen.style.display = "block";
 
 }
 
+function showDifficultyScreen() {
+    createAudio();
+    playSound("click");
+    modeScreen.style.display = "none";
+    difficultyScreen.style.display = "block";
+}
+
+function startAiGame(difficulty) {
+    aiDifficulty = difficulty;
+    startGame("ai");
+    difficultyScreen.style.display = "none";
+}
 
 /* ================= START GAME ================= */
 
@@ -870,13 +917,16 @@ function startGame(mode) {
     homeScreen.style.display = "none";
 
     modeScreen.style.display = "none";
+    difficultyScreen.style.display = "none";
 
     gameScreen.style.display = "block";
 
     if (mode === "ai") {
 
+        const difficultyLabel = aiDifficulty.charAt(0).toUpperCase() + aiDifficulty.slice(1);
+
         document.getElementById("modeLabel").textContent =
-            "🤖 You are X • Computer is O";
+            "🤖 You are X • Computer is O • " + difficultyLabel + " Difficulty";
 
     } else {
 
@@ -1187,9 +1237,17 @@ function computerMove() {
         return;
     }
 
-    let bestMove = findBestMove();
+    let move;
 
-    makeMove(bestMove);
+    if (aiDifficulty === "easy") {
+        move = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    } else if (aiDifficulty === "medium") {
+        move = Math.random() < 0.5 ? findBestMove() : emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    } else if (aiDifficulty === "impossible") {
+        move = findBestMove();
+    }
+
+    makeMove(move);
 
 }
 
@@ -1363,6 +1421,7 @@ function goHome() {
     gameScreen.style.display = "none";
 
     modeScreen.style.display = "none";
+    difficultyScreen.style.display = "none";
 
     homeScreen.style.display = "block";
 
