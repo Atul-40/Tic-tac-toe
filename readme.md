@@ -1,0 +1,5 @@
+Welcome page
+
+animation
+
+loader

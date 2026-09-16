@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tic Tac Toe</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    font-family: "Comic Sans MS", "Trebuchet MS", sans-serif;
+    background: linear-gradient(135deg, #f8fbff, #eef8f5);
+    color: #526b78;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* LOADER */
+
+#loader {
+    position: fixed;
+    inset: 0;
+    background: #f8fbff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.spinner {
+    width: 55px;
+    height: 55px;
+    border: 6px solid #dcefed;
+    border-top: 6px solid #65c9ad;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* CONFETTI */
+
+.confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    pointer-events: none;
+    opacity: 0.7;
+    z-index: 50;
+    animation: float 5s ease-in-out infinite;
+}
+
+.c1 { left: 5%; top: 12%; background: #8ed1c0; }
+.c2 { left: 12%; top: 32%; background: #8baee0; }
+.c3 { left: 19%; top: 18%; background: #f3a6ad; }
+.c4 { left: 26%; top: 38%; background: #9bcbd0; }
+.c5 { left: 32%; top: 25%; background: #73c9b5; }
+.c6 { left: 38%; top: 43%; background: #e9a8b2; }
+.c7 { left: 47%; top: 35%; background: #8fa5d8; }
+.c8 { left: 58%; top: 20%; background: #90c9bd; }
+.c9 { left: 66%; top: 37%; background: #789bd5; }
+.c10 { left: 73%; top: 24%; background: #e4a4ad; }
+.c11 { left: 81%; top: 41%; background: #8dc9c1; }
+.c12 { left: 91%; top: 18%; background: #81a8d7; }
+.c13 { left: 4%; top: 73%; background: #eda5ae; }
+.c14 { left: 15%; top: 84%; background: #78bfd0; }
+.c15 { left: 28%; top: 72%; background: #a6d0c3; }
+.c16 { left: 41%; top: 88%; background: #879bd2; }
+.c17 { left: 55%; top: 75%; background: #efa8b1; }
+.c18 { left: 67%; top: 88%; background: #83cdbb; }
+.c19 { left: 78%; top: 74%; background: #e4a7b0; }
+.c20 { left: 93%; top: 82%; background: #87b3db; }
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) rotate(20deg);
+    }
+
+    50% {
+        transform: translateY(-15px) rotate(70deg);
+    }
+}
+
+/* SCREEN */
+
+.screen {
+    text-align: center;
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+}
+
+.home {
+    display: block;
+}
+
+.game {
+    display: none;
+}
+
+/* HOME */
+
+h1 {
+    font-size: clamp(38px, 6vw, 64px);
+    color: #526c78;
+    margin-bottom: 20px;
+    letter-spacing: -2px;
+}
+
+.line {
+    width: 280px;
+    height: 4px;
+    background: #7da5b0;
+    margin: 0 auto 30px;
+    border-radius: 20px;
+}
+
+.subtitle {
+    font-size: 19px;
+    color: #708692;
+    margin-bottom: 30px;
+}
+
+/* BUTTONS */
+
+button {
+    font-family: inherit;
+}
+
+.start-btn,
+.restart-btn,
+.mode-btn {
+    border: none;
+    background: #65c9ad;
+    color: white;
+    font-size: 19px;
+    font-weight: bold;
+    padding: 15px 30px;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #4eae96;
+    transition: 0.2s;
+}
+
+.start-btn:hover,
+.restart-btn:hover,
+.mode-btn:hover {
+    background: #58bea2;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 0 #4eae96;
+}
+
+.start-btn:active,
+.restart-btn:active,
+.mode-btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 2px 0 #4eae96;
+}
+
+/* MODE */
+
+.mode-selection {
+    display: none;
+}
+
+.mode-title {
+    font-size: 38px;
+    margin-bottom: 30px;
+    color: #526c78;
+}
+
+.mode-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.mode-btn {
+    min-width: 190px;
+}
+
+/* MUSIC */
+
+.music-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+    border: none;
+    border-radius: 50%;
+    background: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 5px 20px rgba(75, 105, 115, 0.15);
+    z-index: 100;
+    transition: 0.2s;
+}
+
+.music-btn:hover {
+    transform: scale(1.08);
+}
+
+/* GAME */
+
+.game h2 {
+    font-size: 40px;
+    margin-bottom: 8px;
+    color: #526c78;
+}
+
+.mode-label {
+    color: #8a9ca4;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.turn {
+    font-size: 20px;
+    margin-bottom: 22px;
+    color: #708692;
+}
+
+/* BOARD */
+
+.board {
+    width: 330px;
+    height: 330px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 5px;
+    background: white;
+    border-radius: 18px;
+    padding: 8px;
+    box-shadow: 0 10px 35px rgba(75, 105, 115, 0.12);
+}
+
+/* IMPORTANT CELL FIX */
+
+.cell {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    min-height: 0;
+
+    background: #f8fbfc;
+    border: 2px solid #b9d2d7;
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 65px;
+    font-weight: bold;
+
+    transition: 0.2s;
+    outline: none;
+}
+
+.cell:hover {
+    background: #eef8f5;
+    transform: scale(1.02);
+}
+
+.cell.x {
+    color: #6a9ed0;
+}
+
+.cell.o {
+    color: #e59aa4;
+}
+
+.cell.winner {
+    background: #d9f3e9;
+    animation: winner 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes winner {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.06);
+    }
+}
+
+/* MESSAGE */
+
+.message {
+    min-height: 40px;
+    margin: 18px 0;
+    font-size: 24px;
+    font-weight: bold;
+    color: #526c78;
+}
+
+/* SCORE */
+
+.score {
+    margin-top: 18px;
+    font-size: 19px;
+    color: #708692;
+}
+
+.score span {
+    font-weight: bold;
+}
+
+.draw-score {
+    margin-left: 15px;
+}
+
+/* GAME BUTTONS */
+
+.game-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.home-btn {
+    border: none;
+    background: #8baee0;
+    color: white;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: bold;
+    padding: 14px 25px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #6e91c4;
+    transition: 0.2s;
+}
+
+.home-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* POPUP */
+
+.popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(60, 80, 90, 0.35);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+}
+
+.popup-box {
+    background: white;
+    width: min(90%, 400px);
+    padding: 35px 25px;
+    border-radius: 25px;
+    text-align: center;
+    box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+    animation: popup 0.3s ease;
+}
+
+@keyframes popup {
+    from {
+        transform: scale(0.7);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.popup-box h2 {
+    font-size: 34px;
+    margin-bottom: 15px;
+}
+
+.popup-box p {
+    font-size: 20px;
+    margin-bottom: 25px;
+    color: #708692;
+}
+
+.popup-btn {
+    border: none;
+    background: #65c9ad;
+    color: white;
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 13px 30px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* MOBILE */
+
+@media (max-width: 500px) {
+
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 38px;
+    }
+
+    .line {
+        width: 210px;
+    }
+
+    .board {
+        width: 290px;
+        height: 290px;
+    }
+
+    .cell {
+        font-size: 58px;
+    }
+
+    .game h2 {
+        font-size: 32px;
+    }
+
+    .music-btn {
+        top: 10px;
+        right: 10px;
+    }
+
+    .mode-title {
+        font-size: 30px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOADING -->
+
+<div id="loader">
+    <div class="spinner"></div>
+</div>
+
+<!-- MUSIC -->
+
+<button class="music-btn" id="musicBtn" type="button">🔊</button>
+
+<audio id="beginSound" src="assests/begin.mp3" preload="auto"></audio>
+
+<!-- CONFETTI -->
+
+<div class="confetti c1"></div>
+<div class="confetti c2"></div>
+<div class="confetti c3"></div>
+<div class="confetti c4"></div>
+<div class="confetti c5"></div>
+<div class="confetti c6"></div>
+<div class="confetti c7"></div>
+<div class="confetti c8"></div>
+<div class="confetti c9"></div>
+<div class="confetti c10"></div>
+<div class="confetti c11"></div>
+<div class="confetti c12"></div>
+<div class="confetti c13"></div>
+<div class="confetti c14"></div>
+<div class="confetti c15"></div>
+<div class="confetti c16"></div>
+<div class="confetti c17"></div>
+<div class="confetti c18"></div>
+<div class="confetti c19"></div>
+<div class="confetti c20"></div>
+
+<!-- HOME -->
+
+<div class="screen home" id="homeScreen">
+
+    <h1>Welcome to Tic Tac Toe</h1>
+
+    <div class="line"></div>
+
+    <div class="subtitle">
+        Ready to challenge your friend or AI?
+    </div>
+
+    <button class="start-btn" onclick="showModes()" type="button">
+        Start Game
+    </button>
+
+</div>
+
+<!-- MODE SCREEN -->
+
+<div class="screen mode-selection" id="modeScreen">
+
+    <div class="mode-title">
+        Choose Game Mode
+    </div>
+
+    <div class="mode-container">
+
+        <button class="mode-btn"
+                onclick="startGame('twoPlayer')"
+                type="button">
+            👥 Two Player
+        </button>
+
+        <button class="mode-btn"
+                onclick="startGame('ai')"
+                type="button">
+            🤖 Play vs AI
+        </button>
+
+    </div>
+
+</div>
+
+<!-- GAME -->
+
+<div class="screen game" id="gameScreen">
+
+    <h2>Tic Tac Toe</h2>
+
+    <div class="mode-label" id="modeLabel">
+        Two Player Mode
+    </div>
+
+    <div class="turn" id="turnText">
+        Player X's Turn
+    </div>
+
+    <!-- EXACTLY 9 CELLS -->
+
+    <div class="board" id="board">
+
+        <button class="cell"
+                type="button"
+                data-index="0"></button>
+
+        <button class="cell"
+                type="button"
+                data-index="1"></button>
+
+        <button class="cell"
+                type="button"
+                data-index="2"></button>
+
+        <button class="cell"
+                type="button"
+                data-index="3"></button>
+
+        <button class="cell"
+                type="button"
+                data-index="4"></button>
+
+        <button class="cell"
+                type="button"
+                data-index="5"></button>
+
+        <button class="cell"
+                type="button"
+                data-index="6"></button>
+
+        <button class="cell"
+                type="button"
+                data-index="7"></button>
+
+        <button class="cell"
+                type="button"
+                data-index="8"></button>
+
+    </div>
+
+    <div class="message" id="message"></div>
+
+    <div class="game-buttons">
+
+        <button class="restart-btn"
+                onclick="restartGame()"
+                type="button">
+            Restart
+        </button>
+
+        <button class="home-btn"
+                onclick="goHome()"
+                type="button">
+            Home
+        </button>
+
+    </div>
+
+    <div class="score">
+
+        X:
+        <span id="scoreX">0</span>
+
+        &nbsp;&nbsp;|&nbsp;&nbsp;
+
+        O:
+        <span id="scoreO">0</span>
+
+        <span class="draw-score">
+            Draw:
+            <span id="scoreDraw">0</span>
+        </span>
+
+    </div>
+
+</div>
+
+<!-- POPUP -->
+
+<div class="popup" id="popup">
+
+    <div class="popup-box">
+
+        <h2 id="popupTitle">
+            🎉 You Win!
+        </h2>
+
+        <p id="popupMessage">
+            Great game!
+        </p>
+
+        <button class="popup-btn"
+                onclick="closePopup()"
+                type="button">
+            Continue
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+/* ================= VARIABLES ================= */
+
+const homeScreen = document.getElementById("homeScreen");
+const modeScreen = document.getElementById("modeScreen");
+const gameScreen = document.getElementById("gameScreen");
+
+const boardElement = document.getElementById("board");
+
+const cells = document.querySelectorAll(".cell");
+
+const turnText = document.getElementById("turnText");
+const message = document.getElementById("message");
+
+const scoreXElement = document.getElementById("scoreX");
+const scoreOElement = document.getElementById("scoreO");
+const scoreDrawElement = document.getElementById("scoreDraw");
+
+const musicBtn = document.getElementById("musicBtn");
+const beginSound = document.getElementById("beginSound");
+
+const popup = document.getElementById("popup");
+const popupTitle = document.getElementById("popupTitle");
+const popupMessage = document.getElementById("popupMessage");
+
+
+/* ================= GAME VARIABLES ================= */
+
+let board = [
+    "", "", "",
+    "", "", "",
+    "", "", ""
+];
+
+let currentPlayer = "X";
+
+let gameActive = true;
+
+let gameMode = "twoPlayer";
+
+let scoreX = 0;
+let scoreO = 0;
+let scoreDraw = 0;
+
+let musicOn = true;
+
+let audioContext = null;
+
+
+/* ================= WINNING COMBINATIONS ================= */
+
+const winningCombinations = [
+
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+
+    [0, 4, 8],
+    [2, 4, 6]
+
+];
+
+
+/* ================= LOADING ================= */
+
+window.addEventListener("load", function() {
+
+    setTimeout(function() {
+
+        document.getElementById("loader").style.display = "none";
+
+    }, 800);
+
+});
+
+
+/* ================= AUDIO ================= */
+
+function createAudio() {
+
+    if (!audioContext) {
+
+        audioContext =
+            new (window.AudioContext ||
+                 window.webkitAudioContext)();
+
+    }
+
+    if (audioContext.state === "suspended") {
+        audioContext.resume();
+    }
+
+}
+
+
+function playSound(type) {
+
+    if (!musicOn) {
+        return;
+    }
+
+    createAudio();
+
+    const oscillator =
+        audioContext.createOscillator();
+
+    const gain =
+        audioContext.createGain();
+
+    oscillator.connect(gain);
+    gain.connect(audioContext.destination);
+
+    let frequency = 400;
+    let duration = 0.12;
+
+    if (type === "click") {
+        frequency = 500;
+    }
+
+    if (type === "win") {
+        frequency = 700;
+        duration = 0.4;
+    }
+
+    if (type === "draw") {
+        frequency = 250;
+        duration = 0.3;
+    }
+
+    oscillator.frequency.value = frequency;
+
+    oscillator.type = "sine";
+
+    gain.gain.setValueAtTime(
+        0.15,
+        audioContext.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        audioContext.currentTime + duration
+    );
+
+    oscillator.start();
+
+    oscillator.stop(
+        audioContext.currentTime + duration
+    );
+
+}
+
+
+/* ================= MUSIC BUTTON ================= */
+
+musicBtn.addEventListener("click", function() {
+
+    createAudio();
+
+    musicOn = !musicOn;
+
+    if (musicOn) {
+
+        musicBtn.textContent = "🔊";
+
+        playSound("click");
+
+    } else {
+
+        musicBtn.textContent = "🔇";
+
+    }
+
+});
+
+
+/* ================= SHOW MODES ================= */
+
+function showModes() {
+
+    createAudio();
+
+    playSound("click");
+
+    beginSound.currentTime = 0;
+    beginSound.play().catch(function() {
+    });
+
+    homeScreen.style.display = "none";
+
+    modeScreen.style.display = "block";
+
+}
+
+
+/* ================= START GAME ================= */
+
+function startGame(mode) {
+
+    createAudio();
+
+    playSound("click");
+
+    gameMode = mode;
+
+    homeScreen.style.display = "none";
+
+    modeScreen.style.display = "none";
+
+    gameScreen.style.display = "block";
+
+    if (mode === "ai") {
+
+        document.getElementById("modeLabel").textContent =
+            "🤖 You are X • Computer is O";
+
+    } else {
+
+        document.getElementById("modeLabel").textContent =
+            "👥 Two Player Mode";
+
+    }
+
+    restartGame();
+
+}
+
+
+/* ================= CELL CLICK ================= */
+
+/*
+   IMPORTANT FIX:
+
+   Instead of attaching separate events to the cells,
+   we listen on the board.
+
+   This guarantees that index 8 / 9th cell works.
+*/
+
+boardElement.addEventListener("click", function(event) {
+
+    const cell = event.target.closest(".cell");
+
+    if (!cell) {
+        return;
+    }
+
+    const index = Number(cell.dataset.index);
+
+    /* Make sure index is valid */
+
+    if (index < 0 || index > 8) {
+        return;
+    }
+
+    if (!gameActive) {
+        return;
+    }
+
+    if (board[index] !== "") {
+        return;
+    }
+
+    /* AI cannot be clicked during computer turn */
+
+    if (
+        gameMode === "ai" &&
+        currentPlayer === "O"
+    ) {
+        return;
+    }
+
+    makeMove(index);
+
+});
+
+
+/* ================= MAKE MOVE ================= */
+
+function makeMove(index) {
+
+    if (!gameActive) {
+        return;
+    }
+
+    if (index < 0 || index > 8) {
+        return;
+    }
+
+    if (board[index] !== "") {
+        return;
+    }
+
+    board[index] = currentPlayer;
+
+    const cell = boardElement.querySelector(
+        '[data-index="' + index + '"]'
+    );
+
+    if (cell) {
+
+        cell.textContent = currentPlayer;
+
+        cell.classList.remove("x", "o");
+
+        cell.classList.add(
+            currentPlayer.toLowerCase()
+        );
+
+    }
+
+    playSound("click");
+
+    checkWinner();
+
+}
+
+
+/* ================= CHECK WINNER ================= */
+
+function checkWinner() {
+
+    let winner = null;
+
+    let winningCells = null;
+
+    for (let combination of winningCombinations) {
+
+        const a = combination[0];
+        const b = combination[1];
+        const c = combination[2];
+
+        if (
+            board[a] !== "" &&
+            board[a] === board[b] &&
+            board[a] === board[c]
+        ) {
+
+            winner = board[a];
+
+            winningCells = combination;
+
+            break;
+        }
+
+    }
+
+
+    /* WINNER */
+
+    if (winner !== null) {
+
+        gameActive = false;
+
+        winningCells.forEach(function(index) {
+
+            const cell = boardElement.querySelector(
+                '[data-index="' + index + '"]'
+            );
+
+            if (cell) {
+                cell.classList.add("winner");
+            }
+
+        });
+
+
+        if (winner === "X") {
+
+            scoreX++;
+
+            scoreXElement.textContent = scoreX;
+
+        } else {
+
+            scoreO++;
+
+            scoreOElement.textContent = scoreO;
+
+        }
+
+
+        message.textContent =
+            "🎉 Player " + winner + " Wins!";
+
+        playSound("win");
+
+        createConfetti();
+
+
+        setTimeout(function() {
+
+            if (gameMode === "ai") {
+
+                if (winner === "X") {
+
+                    showPopup(
+                        "🎉 You Win!",
+                        "Amazing! You defeated the computer!"
+                    );
+
+                } else {
+
+                    showPopup(
+                        "🤖 Computer Wins!",
+                        "Good game! Try again."
+                    );
+
+                }
+
+            } else {
+
+                showPopup(
+                    "🎉 Player " + winner + " Wins!",
+                    "Congratulations! Great game!"
+                );
+
+            }
+
+        }, 500);
+
+        return;
+    }
+
+
+    /* DRAW */
+
+    if (!board.includes("")) {
+
+        gameActive = false;
+
+        scoreDraw++;
+
+        scoreDrawElement.textContent = scoreDraw;
+
+        message.textContent =
+            "🤝 It's a Draw!";
+
+        playSound("draw");
+
+
+        setTimeout(function() {
+
+            showPopup(
+                "🤝 It's a Draw!",
+                "Nobody wins this round."
+            );
+
+        }, 500);
+
+        return;
+    }
+
+
+    /* CHANGE PLAYER */
+
+    currentPlayer =
+        currentPlayer === "X" ? "O" : "X";
+
+    updateTurn();
+
+
+    /* AI */
+
+    if (
+        gameMode === "ai" &&
+        currentPlayer === "O" &&
+        gameActive
+    ) {
+
+        setTimeout(function() {
+
+            computerMove();
+
+        }, 500);
+
+    }
+
+}
+
+
+/* ================= TURN ================= */
+
+function updateTurn() {
+
+    if (
+        gameMode === "ai" &&
+        currentPlayer === "O"
+    ) {
+
+        turnText.textContent =
+            "🤖 Computer's Turn";
+
+    } else {
+
+        turnText.textContent =
+            "Player " + currentPlayer + "'s Turn";
+
+    }
+
+}
+
+
+/* ================= COMPUTER AI ================= */
+
+function computerMove() {
+
+    if (!gameActive) {
+        return;
+    }
+
+    let emptyCells = [];
+
+    for (let i = 0; i < board.length; i++) {
+
+        if (board[i] === "") {
+            emptyCells.push(i);
+        }
+
+    }
+
+    if (emptyCells.length === 0) {
+        return;
+    }
+
+    let bestMove = findBestMove();
+
+    makeMove(bestMove);
+
+}
+
+
+/* ================= BEST AI MOVE ================= */
+
+function findBestMove() {
+
+    /* WIN */
+
+    for (let i = 0; i < 9; i++) {
+
+        if (board[i] === "") {
+
+            board[i] = "O";
+
+            if (checkTemporaryWin("O")) {
+
+                board[i] = "";
+
+                return i;
+            }
+
+            board[i] = "";
+
+        }
+
+    }
+
+
+    /* BLOCK PLAYER */
+
+    for (let i = 0; i < 9; i++) {
+
+        if (board[i] === "") {
+
+            board[i] = "X";
+
+            if (checkTemporaryWin("X")) {
+
+                board[i] = "";
+
+                return i;
+            }
+
+            board[i] = "";
+
+        }
+
+    }
+
+
+    /* CENTER */
+
+    if (board[4] === "") {
+        return 4;
+    }
+
+
+    /* CORNERS */
+
+    const corners = [0, 2, 6, 8];
+
+    let availableCorners =
+        corners.filter(function(index) {
+
+            return board[index] === "";
+
+        });
+
+
+    if (availableCorners.length > 0) {
+
+        return availableCorners[
+            Math.floor(
+                Math.random() *
+                availableCorners.length
+            )
+        ];
+
+    }
+
+
+    /* RANDOM */
+
+    let available = [];
+
+    for (let i = 0; i < 9; i++) {
+
+        if (board[i] === "") {
+            available.push(i);
+        }
+
+    }
+
+    return available[
+        Math.floor(
+            Math.random() *
+            available.length
+        )
+    ];
+
+}
+
+
+/* ================= TEMP WIN CHECK ================= */
+
+function checkTemporaryWin(player) {
+
+    for (let combination of winningCombinations) {
+
+        const a = combination[0];
+        const b = combination[1];
+        const c = combination[2];
+
+        if (
+            board[a] === player &&
+            board[b] === player &&
+            board[c] === player
+        ) {
+
+            return true;
+
+        }
+
+    }
+
+    return false;
+
+}
+
+
+/* ================= RESTART ================= */
+
+function restartGame() {
+
+    board = [
+        "", "", "",
+        "", "", "",
+        "", "", ""
+    ];
+
+    currentPlayer = "X";
+
+    gameActive = true;
+
+    turnText.textContent =
+        "Player X's Turn";
+
+    message.textContent = "";
+
+    cells.forEach(function(cell) {
+
+        cell.textContent = "";
+
+        cell.classList.remove(
+            "x",
+            "o",
+            "winner"
+        );
+
+    });
+
+}
+
+
+/* ================= HOME ================= */
+
+function goHome() {
+
+    gameScreen.style.display = "none";
+
+    modeScreen.style.display = "none";
+
+    homeScreen.style.display = "block";
+
+    restartGame();
+
+}
+
+
+/* ================= POPUP ================= */
+
+function showPopup(title, text) {
+
+    popupTitle.textContent = title;
+
+    popupMessage.textContent = text;
+
+    popup.style.display = "flex";
+
+}
+
+
+function closePopup() {
+
+    popup.style.display = "none";
+
+    restartGame();
+
+}
+
+
+/* ================= CONFETTI ================= */
+
+function createConfetti() {
+
+    for (let i = 0; i < 35; i++) {
+
+        const piece =
+            document.createElement("div");
+
+        piece.className = "confetti";
+
+        piece.style.left =
+            Math.random() * 100 + "%";
+
+        piece.style.top =
+            Math.random() * 80 + "%";
+
+        piece.style.width =
+            (Math.random() * 8 + 6) + "px";
+
+        piece.style.height =
+            (Math.random() * 8 + 6) + "px";
+
+        piece.style.animationDuration =
+            (Math.random() * 2 + 2) + "s";
+
+        document.body.appendChild(piece);
+
+        setTimeout(function() {
+
+            piece.remove();
+
+        }, 3000);
+
+    }
+
+}
+
+</script>
+
+</body>
+</html>
